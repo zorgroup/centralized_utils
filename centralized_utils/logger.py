@@ -102,6 +102,6 @@ class LogController:
             "TotalSavedToS3": stats.get('total_saved_to_s3')
         })
 
-        self.logger.info('\n')
+        self.logger.info('\n  version 1 ')
         self.logger.info(json.dumps(payload))
         self.logger.info('\n')
