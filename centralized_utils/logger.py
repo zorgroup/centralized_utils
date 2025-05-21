@@ -4,10 +4,11 @@ import logging
 from typing import Optional
 
 class LogController:
-    def __init__(self):
+    def __init__(self, scraper_name):
         """namespace: Shared CloudWatch namespace for metrics."""
         self.namespace = 'ws_main'
         self.logger = self._setup_logging()
+        self.scraper_name = scraper_name
 
 
     def _setup_logging(self):
@@ -27,7 +28,6 @@ class LogController:
     def log_request(
         self,
         outcome: str,
-        scraper_name: str,
         url: str,
         proxy: str,
         response_time_ms: Optional[float] | None = None,
@@ -75,7 +75,7 @@ class LogController:
             payload = {
                 "_aws": {"Timestamp": int(time.time() * 1000), "CloudWatchMetrics": cw_metrics},
                 "Outcome": outcome,
-                "Retailer": scraper_name,
+                "Retailer": self.scraper_name,
                 "ResponseTime": response_time_ms,
             }
         else:
@@ -87,7 +87,7 @@ class LogController:
             payload = {
                 "_aws": {"Timestamp": int(time.time() * 1000), "CloudWatchMetrics": cw_metrics},
                 "Outcome": outcome,
-                "Retailer": scraper_name,
+                "Retailer": self.scraper_name,
                 "RequestCount": 1,
             }
 
@@ -124,7 +124,7 @@ class LogController:
         self.logger.info('\n')
 
 
-    def log_sanitization_error(self, scraper_name: str, product: dict, error: str):
+    def log_sanitization_error(self, product: dict, error: str):
         '''
         Use this function to log outcome 'sanitization_error'
         '''
@@ -137,7 +137,7 @@ class LogController:
         payload = {
             "_aws": {"Timestamp": int(time.time() * 1000), "CloudWatchMetrics": cw_metrics},
             "Outcome": 'sanitization_error',
-            "Retailer": scraper_name,
+            "Retailer": self.scraper_name,
             "RequestCount": 1,
         }
 
@@ -152,7 +152,7 @@ class LogController:
         self.logger.info('\n')
 
 
-    def log_processing_error(self, scraper_name: str, message: str):
+    def log_processing_error(self, message: str):
         '''Use this function to log these 'processing_error' outcome, these are generic errors anywhere in the code'''
         # Create EMF payload.
         cw_metrics = [{
@@ -163,7 +163,7 @@ class LogController:
         payload = {
             "_aws": {"Timestamp": int(time.time() * 1000), "CloudWatchMetrics": cw_metrics},
             "Outcome": 'processing_error',
-            "Retailer": scraper_name,
+            "Retailer": self.scraper_name,
             "RequestCount": 1,
         }
 
