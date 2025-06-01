@@ -184,7 +184,7 @@ class LogController:
 
 
     def log_s3_update(self, product_count, file_name, type):
-        """This function takes the stats dict and loggs the relavent details"""
+        """This function should be called whenever products are successfully uploaded to s3"""
 
         # Build a single log message with padding and block separators.
         payload = (
