@@ -27,43 +27,38 @@ class LogController:
 
     def log_request(
         self,
-        outcome: str,
-        url: str,
+        sanitization_success: bool,
+        response_time_ms: float|None,
+        status_code: int|None,
+        error_message: str|None,
+        urls: list[str],
         proxy_subscription_id: str,
-        response_time_ms: Optional[float] | None = None,
-        status_code: Optional[int] | None = None,
-        message: Optional[str] | None = None,
-        stats: Optional[dict] | None = None
     ):
         """
         Emits an EMF payload for CloudWatch.
-        Use this function to log one of these outcomes: 
+        This function will log one of the following request outcomes: 
             1. success
             2. proxy_issue 
             3. scraper_issue 
-
-        Args:
-          outcome: 'success', 'proxy_issue', or 'scraper_issue'
-          response_time_ms: elapsed time in ms
-          retailer: used as EMF dimension
-          proxy: proxy URL used
-          url: request URL
-          stats: dict with keys:
-            - num_of_req
-            - num_of_successful_req
-            - total_products_found
-            - num_of_sanitized_products
-            - total_saved_to_s3
         """
         
         # Value Assertions
-        if outcome not in ('success', 'proxy_issue', 'scraper_issue'):
-            raise ValueError(f'Unsupported outcome: {outcome}')
-        if not proxy_subscription_id or not url:
-            raise ValueError("Both 'proxy_subscription_id' and 'url' must be provided.")
-        if outcome == 'proxy_issue':
-            if response_time_ms == None:
-                raise ValueError("Parameter 'response_time_ms' is mandatory if 'outcome' == 'proxy_issue'")
+        if type(sanitization_success) is not bool:
+            raise ValueError(f'sanitization_success must be boolean, recieved: {sanitization_success}')
+        if not proxy_subscription_id or not urls:
+            raise ValueError("Both 'proxy_subscription_id' and 'urls' must be provided.")
+
+        # Set response_time to 0.0 milisecond if not available.
+        if response_time_ms == None:
+            response_time_ms = 0.0
+
+        # Analyze the request to determine outcome.
+        if status_code==200 and sanitization_success:
+            outcome = 'success'
+        elif status_code in [403, 429]:
+            outcome = 'proxy_issue'
+        else:
+            outcome = 'scraper_issue'
 
         # Create EMF payload.
         cw_metrics = [{
@@ -79,34 +74,17 @@ class LogController:
             "ResponseTime": response_time_ms,
         }
 
-        # Add additional fields
+        # Add additional fields to payload.
         payload.update({
-            "Url": url,
-           #"Proxy": proxy,
+            "Urls": urls,
             "StatusCode": status_code,
-            "Message": message,
         })
-
-        # Only insert stats fields in log event if stats != None
-        if stats:
-            success_rate = (
-                round(100 * stats['num_of_successful_req'] / stats['num_of_req'], 2)
-                if stats.get('num_of_req') else 0
-            )
-            sanitization_rate = (
-                round(100 * stats['num_of_sanitized_products'] / stats['total_products_found'], 2)
-                if stats.get('total_products_found') else 0
-            )
+        if error_message:
             payload.update({
-                "TotalRequests": stats.get('num_of_req'),
-                "SuccessfulRequests": stats.get('num_of_successful_req'),
-                "SuccessRate%": success_rate,
-                "TotalProductsFound": stats.get('total_products_found'),
-                "TotalProductsSanitized": stats.get('num_of_sanitized_products'),
-                "SanitizationRate$": sanitization_rate,
-                "TotalSavedToS3": stats.get('total_saved_to_s3')
+                'Error': error_message
             })
 
+        # Generate log.
         self.logger.info('\n')
         self.logger.info(json.dumps(payload))
         self.logger.info('\n')
@@ -208,3 +186,12 @@ class LogController:
             'currency': sanitized_product['currency']
         }
         self.logger.info(f'product: {json.dumps(payload)}')
+
+
+
+
+
+
+
+
+
