@@ -27,12 +27,12 @@ class LogController:
 
     def log_request(
         self,
-        sanitization_success: bool,
+        sanitization_rate: float|int,
         response_time_ms: float|None,
-        status_code: int|None,
-        error_message: str|None,
+        status: int|None,
+        error_msg: str|None,
         urls: list[str],
-        proxy_subscription_id: str,
+        proxy_id: str,
     ):
         """
         Emits an EMF payload for CloudWatch.
@@ -43,19 +43,19 @@ class LogController:
         """
         
         # Value Assertions
-        if type(sanitization_success) is not bool:
-            raise ValueError(f'sanitization_success must be boolean, recieved: {sanitization_success}')
-        if not proxy_subscription_id or not urls:
-            raise ValueError("Both 'proxy_subscription_id' and 'urls' must be provided.")
+        if type(sanitization_rate) not in [float, int]:
+            raise ValueError(f'sanitization_rate must be float or int, recieved: {sanitization_rate}')
+        if not proxy_id or not urls:
+            raise ValueError("Both 'proxy_id' and 'urls' must be provided.")
 
         # Set response_time to 0.0 milisecond if not available.
         if response_time_ms == None:
             response_time_ms = 0.0
 
         # Analyze the request to determine outcome.
-        if status_code==200 and sanitization_success:
+        if status==200 and sanitization_rate >= 50.0:
             outcome = 'success'
-        elif status_code in [403, 429]:
+        elif status in [403, 429]:
             outcome = 'proxy_issue'
         else:
             outcome = 'scraper_issue'
@@ -70,18 +70,19 @@ class LogController:
             "_aws": {"Timestamp": int(time.time() * 1000), "CloudWatchMetrics": cw_metrics},
             "Outcome": outcome,
             "Retailer": self.scraper_name,
-            "ProxySubscriptionId": proxy_subscription_id,
+            "ProxySubscriptionId": proxy_id,
             "ResponseTime": response_time_ms,
         }
 
         # Add additional fields to payload.
         payload.update({
             "Urls": urls,
-            "StatusCode": status_code,
+            "StatusCode": status,
+            "SanitizationRate": sanitization_rate
         })
-        if error_message:
+        if error_msg:
             payload.update({
-                'Error': error_message
+                'Error': error_msg
             })
 
         # Generate log.
@@ -176,16 +177,29 @@ class LogController:
         self.logger.info(payload)
 
 
-    def log_product_info(self, sanitized_product):
+    def log_product_info(self, product: dict):
         """This function takes the sanitized product dict and loggs the essential details"""
 
+        if type(product) != dict:
+            raise ValueError(f"'product' must be of type 'dict'. Got '{type(product)}' instead")
+        
         payload = {
-            'product_url': sanitized_product['product_url'],
-            'price': sanitized_product['price'],
-            'in_stock': sanitized_product['in_stock'],
-            'currency': sanitized_product['currency']
+            'product_url': product['product_url'],
+            'price': product['price'],
+            'in_stock': product['in_stock'],
+            'currency': product['currency']
         }
         self.logger.info(f'product: {json.dumps(payload)}')
+
+
+    def log_products_info(self, products: list[dict]):
+        """This function takes a list of sanitized products and loggs the essential details"""
+
+        if type(products) != list:
+            raise ValueError(f"'products' must be of type 'list[dict]'. Got '{type(products)}' instead")
+        
+        for product in products:
+            self.log_product_info(product)
 
 
 
