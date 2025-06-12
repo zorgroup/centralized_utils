@@ -90,6 +90,8 @@ class LogController:
         self.logger.info(json.dumps(payload))
         self.logger.info('\n')
 
+        return outcome
+
 
     def log_sanitization_error(self, product: dict, error: str):
         '''
