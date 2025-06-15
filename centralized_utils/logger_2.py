@@ -6,7 +6,7 @@ from typing import Optional
 class LogController:
     def __init__(self, scraper_name):
         """namespace: Shared CloudWatch namespace for metrics."""
-        self.namespace = 'ws_main'
+        self.namespace = 'ws_main_v1'
         self.logger = self._setup_logging()
         self.scraper_name = scraper_name
 
@@ -63,14 +63,14 @@ class LogController:
         # Create EMF payload.
         cw_metrics = [{
                 "Namespace": self.namespace,
-                "Dimensions": [["Outcome", "Retailer", "ProxySubscriptionId"]],
+                "Dimensions": [["Outcome", "Retailer", "ProxyId"]],
                 "Metrics": [{"Name": "ResponseTime", "Unit": "Milliseconds"}]
             }]
         payload = {
             "_aws": {"Timestamp": int(time.time() * 1000), "CloudWatchMetrics": cw_metrics},
             "Outcome": outcome,
             "Retailer": self.scraper_name,
-            "ProxySubscriptionId": proxy_id,
+            "ProxyId": proxy_id,
             "ResponseTime": response_time_ms,
         }
 
