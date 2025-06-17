@@ -106,7 +106,7 @@ class LogController:
             "_aws": {"Timestamp": int(time.time() * 1000), "CloudWatchMetrics": cw_metrics},
             "Outcome": 'processing_error',
             "Retailer": self.scraper_name,
-            "ProxyId": proxy_id,
+            "ProxyId": proxy_id if proxy_id else 'N/A',
             "RequestCount": 1,
         }
 
@@ -133,7 +133,7 @@ class LogController:
             "_aws": {"Timestamp": int(time.time() * 1000), "CloudWatchMetrics": cw_metrics},
             "Outcome": 's3_upload',
             "Retailer": self.scraper_name,
-            "ProxyId": proxy_id,
+            "ProxyId": proxy_id if proxy_id else 'N/A',
             "RequestCount": product_count,
         }
 
