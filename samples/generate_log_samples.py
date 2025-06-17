@@ -142,6 +142,7 @@ def main():
     global LOG_CONTROLLER
     LOG_CONTROLLER = LogController(scraper_name='ws_retailer_m1')
 
+    # Create dummy products.
     dummy_products = [
         {
             'price': 20.0,
@@ -163,6 +164,7 @@ def main():
         },
     ]
 
+    # Generate logs.
     success_log = get_log_as_string(log_success)
     proxy_issue_log = get_log_as_string(log_proxy_issue)
     scraper_issue_log = get_log_as_string(log_scraper_issue)
@@ -171,6 +173,7 @@ def main():
     products_log = get_log_as_string(generate_products_log, dummy_products)
 
 
+    # Write to json files with pretty indentation.
     samples_dir = Path(__file__).parent
     with open(samples_dir / 'success.json', 'w', encoding='utf-8') as f:
         json.dump(json.loads(success_log), f, indent=4)
