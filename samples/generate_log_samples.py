@@ -48,7 +48,7 @@ def simulate_scraper_issue():
     LOG_CONTROLLER.log_request(
         sanitization_rate=0.0, 
         response_time_ms=3532, 
-        status=None, 
+        status=200, 
         error_msg='error in extracting product data', 
         proxy_id='prox-4a-proxyrotator-100thread:datacenter-worldwide_ipv4', 
         urls=['https://www.retailer.com/product1', 'https://www.retailer.com/product2']
