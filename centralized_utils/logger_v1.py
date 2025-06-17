@@ -112,7 +112,7 @@ class LogController:
 
         # Add additional metadata.
         payload.update({
-            'message': message,
+            'Error': message,
         })
         
         # Print the EMF log.
