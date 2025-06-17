@@ -88,7 +88,7 @@ def log_s3_upload(product_buffer):
 
 
 
-def generate_products_log(products):
+def log_products(products):
     print('\n\n\n\n\n\n\n\nproducts:')
     
     LOG_CONTROLLER.log_products(
@@ -170,7 +170,7 @@ def main():
     scraper_issue_log = get_log_as_string(log_scraper_issue)
     processing_error_log = get_log_as_string(log_processing_error)
     s3_upload_log = get_log_as_string(log_s3_upload, dummy_products)
-    products_log = get_log_as_string(generate_products_log, dummy_products)
+    products_log = get_log_as_string(log_products, dummy_products)
 
 
     # Write to json files with pretty indentation.
