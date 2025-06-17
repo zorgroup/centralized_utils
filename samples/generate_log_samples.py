@@ -49,7 +49,7 @@ def simulate_scraper_issue():
         sanitization_rate=0.0, 
         response_time_ms=3532, 
         status=200, 
-        error_msg='error in extracting product data', 
+        error_msg='error extracting product data in line 215', 
         proxy_id='prox-4a-proxyrotator-100thread:datacenter-worldwide_ipv4', 
         urls=['https://www.retailer.com/product1', 'https://www.retailer.com/product2']
     )
@@ -64,7 +64,7 @@ def simulate_processing_error():
     print('\n\n\n\n\n\n\n\nprocessing_error:')
     
     LOG_CONTROLLER.log_processing_error(
-        message='Error connecting to Redis.'
+        message='Error connecting to Redis in line 188.'
     )
     
     print('----------------------------------------------------------------------------------------------------------')

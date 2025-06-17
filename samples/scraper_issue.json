@@ -1,6 +1,6 @@
 {
     "_aws": {
-        "Timestamp": 1750140108989,
+        "Timestamp": 1750140459655,
         "CloudWatchMetrics": [
             {
                 "Namespace": "ws_main_v1",
@@ -30,5 +30,5 @@
     ],
     "StatusCode": 200,
     "SanitizationRate": 0.0,
-    "Error": "error in extracting product data"
+    "Error": "error extracting product data in line 215"
 }

@@ -1,6 +1,6 @@
 {
     "_aws": {
-        "Timestamp": 1750140108990,
+        "Timestamp": 1750140459656,
         "CloudWatchMetrics": [
             {
                 "Namespace": "ws_main_v1",
@@ -24,5 +24,5 @@
     "Retailer": "ws_retailer_m1",
     "ProxyId": "N/A",
     "RequestCount": 1,
-    "message": "Error connecting to Redis."
+    "Error": "Error connecting to Redis in line 188."
 }
