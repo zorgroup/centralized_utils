@@ -162,6 +162,18 @@ def main():
             'in_stock': True,
             'product_url': 'https://www.retailer.com/product3'
         },
+        {
+            'price': 7.0,
+            'currency': 'USD',
+            'in_stock': True,
+            'product_url': 'https://www.retailer.com/product4'
+        },
+        {
+            'price': 8.0,
+            'currency': 'USD',
+            'in_stock': False,
+            'product_url': 'https://www.retailer.com/product5'
+        },
     ]
 
     # Generate logs.
@@ -169,8 +181,8 @@ def main():
     proxy_issue_log = get_log_as_string(log_proxy_issue)
     scraper_issue_log = get_log_as_string(log_scraper_issue)
     processing_error_log = get_log_as_string(log_processing_error)
+    products_log = get_log_as_string(log_products, dummy_products[0:3])
     s3_upload_log = get_log_as_string(log_s3_upload, dummy_products)
-    products_log = get_log_as_string(log_products, dummy_products)
 
 
     # Write to json files with pretty indentation.
@@ -183,10 +195,10 @@ def main():
         json.dump(json.loads(scraper_issue_log), f, indent=4)
     with open(samples_dir /'processing_error.json', 'w', encoding='utf-8') as f:
         json.dump(json.loads(processing_error_log), f, indent=4)
-    with open(samples_dir / 's3_upload.json', 'w', encoding='utf-8') as f:
-        json.dump(json.loads(s3_upload_log), f, indent=4)
     with open(samples_dir / 'products.json', 'w', encoding='utf-8') as f:
         json.dump(json.loads(products_log), f, indent=4)
+    with open(samples_dir / 's3_upload.json', 'w', encoding='utf-8') as f:
+        json.dump(json.loads(s3_upload_log), f, indent=4)
 
 
     print('\n\nSample logs written to files.\n')
