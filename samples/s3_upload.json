@@ -1,0 +1,28 @@
+{
+    "_aws": {
+        "Timestamp": 1750138444740,
+        "CloudWatchMetrics": [
+            {
+                "Namespace": "ws_main_v1",
+                "Dimensions": [
+                    [
+                        "Outcome",
+                        "Retailer",
+                        "ProxyId"
+                    ]
+                ],
+                "Metrics": [
+                    {
+                        "Name": "RequestCount",
+                        "Unit": "Count"
+                    }
+                ]
+            }
+        ]
+    },
+    "Outcome": "s3_upload",
+    "Retailer": "ws_retailer_m1",
+    "ProxyId": null,
+    "RequestCount": 3,
+    "ProductsType": "seen"
+}

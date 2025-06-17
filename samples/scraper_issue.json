@@ -1,0 +1,34 @@
+{
+    "_aws": {
+        "Timestamp": 1750138444736,
+        "CloudWatchMetrics": [
+            {
+                "Namespace": "ws_main_v1",
+                "Dimensions": [
+                    [
+                        "Outcome",
+                        "Retailer",
+                        "ProxyId"
+                    ]
+                ],
+                "Metrics": [
+                    {
+                        "Name": "ResponseTime",
+                        "Unit": "Milliseconds"
+                    }
+                ]
+            }
+        ]
+    },
+    "Outcome": "scraper_issue",
+    "Retailer": "ws_retailer_m1",
+    "ProxyId": "prox-4a-proxyrotator-100thread:datacenter-worldwide_ipv4",
+    "ResponseTime": 3532,
+    "Urls": [
+        "https://www.retailer.com/product1",
+        "https://www.retailer.com/product2"
+    ],
+    "StatusCode": null,
+    "SanitizationRate": 0.0,
+    "Error": "error in extracting product data"
+}

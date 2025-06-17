@@ -1,0 +1,27 @@
+{
+    "_aws": {
+        "Timestamp": 1750138444741,
+        "CloudWatchMetrics": [
+            {
+                "Namespace": "ws_main_v1",
+                "Dimensions": [
+                    [
+                        "Outcome",
+                        "Retailer",
+                        "ProxyId"
+                    ]
+                ],
+                "Metrics": [
+                    {
+                        "Name": "RequestCount",
+                        "Unit": "Count"
+                    }
+                ]
+            }
+        ]
+    },
+    "Outcome": "products",
+    "Retailer": "ws_retailer_m1",
+    "ProxyId": "prox-4a-proxyrotator-100thread:datacenter-worldwide_ipv4",
+    "RequestCount": 3
+}
