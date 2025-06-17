@@ -9,6 +9,7 @@ class LogController:
         self.namespace = 'ws_main_v1'
         self.logger = self._setup_logging()
         self.scraper_name = scraper_name
+        self.emf_dimensions = [["Outcome", "Retailer", "ProxyId"]]
 
 
     def _setup_logging(self):
@@ -63,7 +64,7 @@ class LogController:
         # Create EMF payload.
         cw_metrics = [{
                 "Namespace": self.namespace,
-                "Dimensions": [["Outcome", "Retailer", "ProxyId"]],
+                "Dimensions": self.emf_dimensions,
                 "Metrics": [{"Name": "ResponseTime", "Unit": "Milliseconds"}]
             }]
         payload = {
@@ -74,7 +75,7 @@ class LogController:
             "ResponseTime": response_time_ms,
         }
 
-        # Add additional fields to payload.
+        # Add additional metadata.
         payload.update({
             "Urls": urls,
             "StatusCode": status,
@@ -85,7 +86,7 @@ class LogController:
                 'Error': error_msg
             })
 
-        # Generate log.
+        # Print the EMF log.
         self.logger.info('\n')
         self.logger.info(json.dumps(payload))
         self.logger.info('\n')
@@ -93,79 +94,112 @@ class LogController:
         return outcome
 
 
-    def log_sanitization_error(self, product: dict, error: str):
-        '''
-        Use this function to log outcome 'sanitization_error'
-        '''
-        # Create EMF payload.
-        cw_metrics = [{
-                "Namespace": self.namespace,
-                "Dimensions": [["Outcome", "Retailer"]],
-                "Metrics": [{"Name": "RequestCount", "Unit": "Count"}]
-            }]
-        payload = {
-            "_aws": {"Timestamp": int(time.time() * 1000), "CloudWatchMetrics": cw_metrics},
-            "Outcome": 'sanitization_error',
-            "Retailer": self.scraper_name,
-            "RequestCount": 1,
-        }
-
-        # Add additional fields.
-        payload.update({
-            "product": product,
-            "message": f'failed to sanitize product - {error}'
-        })
-        
-        self.logger.info('\n')
-        self.logger.info(json.dumps(payload))
-        self.logger.info('\n')
-
-
-    def log_processing_error(self, message: str):
+    def log_processing_error(self, message: str, proxy_id: Optional[str] = None):
         '''Use this function to log these 'processing_error' outcome, these are generic errors anywhere in the code'''
         # Create EMF payload.
         cw_metrics = [{
                 "Namespace": self.namespace,
-                "Dimensions": [["Outcome", "Retailer"]],
+                "Dimensions": self.emf_dimensions,
                 "Metrics": [{"Name": "RequestCount", "Unit": "Count"}]
             }]
         payload = {
             "_aws": {"Timestamp": int(time.time() * 1000), "CloudWatchMetrics": cw_metrics},
             "Outcome": 'processing_error',
             "Retailer": self.scraper_name,
+            "ProxyId": proxy_id,
             "RequestCount": 1,
         }
 
-        # Add additional fields.
+        # Add additional metadata.
         payload.update({
             'message': message,
         })
         
+        # Print the EMF log.
         self.logger.info('\n')
         self.logger.info(json.dumps(payload))
         self.logger.info('\n')
 
 
+    def log_s3_upload(self, product_count, file_name, products_type, proxy_id: Optional[str] = None):
+
+        # Create EMF payload.
+        cw_metrics = [{
+                "Namespace": self.namespace,
+                "Dimensions": self.emf_dimensions,
+                "Metrics": [{"Name": "RequestCount", "Unit": "Count"}]
+            }]
+        payload = {
+            "_aws": {"Timestamp": int(time.time() * 1000), "CloudWatchMetrics": cw_metrics},
+            "Outcome": 's3_upload',
+            "Retailer": self.scraper_name,
+            "ProxyId": proxy_id,
+            "RequestCount": product_count,
+        }
+
+        # Add additional metadata.
+        payload.update({
+            "ProductsType": products_type   # Whether these products are seen or unseen.
+        })
+        
+        # Print the EMF log.
+        self.logger.info('\n')
+        self.logger.info(json.dumps(payload))
+        self.logger.info('\n')
+
+        # Print info message for visual purpose.
+        info_message = (
+            "\n"  # Padding above.
+            "*******************************************************************************************\n"
+            f"{product_count} {products_type} products inserted into s3. Filename: {file_name}\n"
+            "*******************************************************************************************"
+            "\n"  # Padding below.
+        )
+        self.logger.info(info_message)
+
+
+    def log_products(self, products: list[dict], proxy_id: str):
+        """This function takes a list of sanitized products and loggs the essential details"""
+
+        if type(products) != list:
+            raise ValueError(f"'products' must be of type 'list[dict]'. Got '{type(products)}' instead")
+        
+        # Create EMF payload.
+        cw_metrics = [{
+                "Namespace": self.namespace,
+                "Dimensions": self.emf_dimensions,
+                "Metrics": [{"Name": "RequestCount", "Unit": "Count"}]
+            }]
+        payload = {
+            "_aws": {"Timestamp": int(time.time() * 1000), "CloudWatchMetrics": cw_metrics},
+            "Outcome": 'products',
+            "Retailer": self.scraper_name,
+            "ProxyId": proxy_id,
+            "RequestCount": len(products),
+        }
+
+        # Print the EMF log.
+        self.logger.info('\n')
+        self.logger.info(json.dumps(payload))
+        self.logger.info('\n')
+        
+        # Print product data for visual purpose.
+        for product in products:
+            product_info = {
+                'product_url': product['product_url'],
+                'price': product['price'] if 'price' in product else None,
+                'in_stock': product['in_stock'],
+                'currency': product['currency']
+            }
+            self.logger.info(f'product: {json.dumps(product_info)}')
+
+    
     def log_info(self, message: str):
         '''Prints any general purpose (informational) message'''
         payload = f'Info: {message}'
         self.logger.info(payload)
 
-
-    def log_s3_update(self, product_count, file_name, type):
-        """This function takes the stats dict and loggs the relavent details"""
-
-        # Build a single log message with padding and block separators.
-        payload = (
-            "\n"  # Padding above.
-            "*******************************************************************************************\n"
-            f"{product_count} {type} products inserted into s3. Filename: {file_name}\n"
-            "*******************************************************************************************"
-            "\n"  # Padding below.
-        )
-        self.logger.info(payload)
-
-
+    
     def log_stats(self, stats: dict):
         """Simplified json print with some padding for visual separation."""
         
@@ -178,30 +212,6 @@ class LogController:
         )
         self.logger.info(payload)
 
-
-    def log_product_info(self, product: dict):
-        """This function takes the sanitized product dict and loggs the essential details"""
-
-        if type(product) != dict:
-            raise ValueError(f"'product' must be of type 'dict'. Got '{type(product)}' instead")
-        
-        payload = {
-            'product_url': product['product_url'],
-            'price': product['price'] if 'price' in product else None,
-            'in_stock': product['in_stock'],
-            'currency': product['currency']
-        }
-        self.logger.info(f'product: {json.dumps(payload)}')
-
-
-    def log_products_info(self, products: list[dict]):
-        """This function takes a list of sanitized products and loggs the essential details"""
-
-        if type(products) != list:
-            raise ValueError(f"'products' must be of type 'list[dict]'. Got '{type(products)}' instead")
-        
-        for product in products:
-            self.log_product_info(product)
 
 
 
