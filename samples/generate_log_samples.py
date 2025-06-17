@@ -6,7 +6,7 @@ from centralized_utils.logger_v1 import LogController
 
 
 
-def log_success():
+def simulate_success():
     print('\n\n\n\n\n\n\n\nsuccess:')
     
     LOG_CONTROLLER.log_request(
@@ -24,7 +24,7 @@ def log_success():
 
 
 
-def log_proxy_issue():
+def simulate_proxy_issue():
     print('\n\n\n\n\n\n\n\nproxy_issue:')
     
     LOG_CONTROLLER.log_request(
@@ -42,7 +42,7 @@ def log_proxy_issue():
 
 
 
-def log_scraper_issue():
+def simulate_scraper_issue():
     print('\n\n\n\n\n\n\n\nscraper_issue:')
     
     LOG_CONTROLLER.log_request(
@@ -60,7 +60,7 @@ def log_scraper_issue():
 
 
 
-def log_processing_error():
+def simulate_processing_error():
     print('\n\n\n\n\n\n\n\nprocessing_error:')
     
     LOG_CONTROLLER.log_processing_error(
@@ -73,7 +73,7 @@ def log_processing_error():
 
 
 
-def log_s3_upload(product_buffer):
+def simulate_s3_upload(product_buffer):
     print('\n\n\n\n\n\n\n\ns3_upload:')
     
     LOG_CONTROLLER.log_s3_upload(
@@ -88,7 +88,7 @@ def log_s3_upload(product_buffer):
 
 
 
-def log_products(products):
+def simulate_products(products):
     print('\n\n\n\n\n\n\n\nproducts:')
     
     LOG_CONTROLLER.log_products(
@@ -177,12 +177,12 @@ def main():
     ]
 
     # Generate logs.
-    success_log = get_log_as_string(log_success)
-    proxy_issue_log = get_log_as_string(log_proxy_issue)
-    scraper_issue_log = get_log_as_string(log_scraper_issue)
-    processing_error_log = get_log_as_string(log_processing_error)
-    products_log = get_log_as_string(log_products, dummy_products[0:3])
-    s3_upload_log = get_log_as_string(log_s3_upload, dummy_products)
+    success_log = get_log_as_string(simulate_success)
+    proxy_issue_log = get_log_as_string(simulate_proxy_issue)
+    scraper_issue_log = get_log_as_string(simulate_scraper_issue)
+    processing_error_log = get_log_as_string(simulate_processing_error)
+    products_log = get_log_as_string(simulate_products, dummy_products[0:3])
+    s3_upload_log = get_log_as_string(simulate_s3_upload, dummy_products)
 
 
     # Write to json files with pretty indentation.
