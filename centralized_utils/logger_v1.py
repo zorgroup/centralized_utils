@@ -1,97 +1,110 @@
+
 import time
 import json
 import logging
-from typing import Optional
+from typing import Optional, Union, List, Dict
 
 class LogController:
-    def __init__(self, scraper_name):
+    def __init__(self, scraper_name: str):
         """namespace: Shared CloudWatch namespace for metrics."""
         self.namespace = 'ws_main_v1'
         self.logger = self._setup_logging()
         self.scraper_name = scraper_name
         self.emf_dimensions = [["Outcome", "Retailer", "ProxyId"]]
 
-
-    def _setup_logging(self):
+    def _setup_logging(self) -> logging.Logger:
         """Configure logging for the main script"""
-        # Map the INFO logging level to "Patrick"
         logging.addLevelName(logging.INFO, "Patrick")
         logger = logging.getLogger(__name__)
         if not logger.handlers:
             logger.setLevel(logging.INFO)
-            # Console handler
             ch = logging.StreamHandler()
             ch.setFormatter(logging.Formatter('%(message)s'))
             logger.addHandler(ch)
-            return logger
-
+        return logger
 
     def log_request(
         self,
-        sanitization_rate: float|int,
-        response_time_ms: float|None,
-        status: int|None,
-        error_msg: str|None,
-        urls: list[str],
+        sanitization_rate: Union[float, int],
+        response_time_ms: Optional[float],
+        status: Optional[int],
+        error_msg: Optional[str],
+        urls: List[str],
         proxy_id: str,
-    ):
+        product_count: Optional[int] = None,
+    ) -> str:
         """
         Emits an EMF payload for CloudWatch.
-        This function will log one of the following request outcomes: 
+        This function will log one of the following request outcomes:
             1. success
-            2. proxy_issue 
-            3. scraper_issue 
+            2. proxy_issue
+            3. scraper_issue
+        If outcome == "success" and product_count is given, emits an extra ProductCount metric.
         """
-        
-        # Value Assertions
-        if type(sanitization_rate) not in [float, int]:
-            raise ValueError(f'sanitization_rate must be float or int, recieved: {sanitization_rate}')
+
+        # --- Value Assertions ---
+        if type(sanitization_rate) not in (float, int):
+            raise ValueError(f'sanitization_rate must be float or int, received: {sanitization_rate}')
         if not proxy_id or not urls:
             raise ValueError("Both 'proxy_id' and 'urls' must be provided.")
 
-        # Set response_time to 0.0 milisecond if not available.
-        if response_time_ms == None:
+        # --- Normalize response_time ---
+        if response_time_ms is None:
             response_time_ms = 0.0
 
-        # Analyze the request to determine outcome.
-        if status==200 and sanitization_rate >= 50.0:
+        # --- Determine outcome ---
+        if status == 200 and sanitization_rate >= 50.0:
             outcome = 'success'
-        elif status in [403, 429]:
+        elif status in (403, 429):
             outcome = 'proxy_issue'
         else:
             outcome = 'scraper_issue'
 
-        # Create EMF payload.
+        # --- Build metric definitions ---
         cw_metrics = [{
-                "Namespace": self.namespace,
-                "Dimensions": self.emf_dimensions,
-                "Metrics": [{"Name": "ResponseTime", "Unit": "Milliseconds"}]
-            }]
-        payload = {
-            "_aws": {"Timestamp": int(time.time() * 1000), "CloudWatchMetrics": cw_metrics},
+            "Namespace": self.namespace,
+            "Dimensions": self.emf_dimensions,
+            "Metrics": [
+                {"Name": "ResponseTime", "Unit": "Milliseconds"}
+            ]
+        }]
+
+        # Only for success, include ProductCount metric
+        if outcome == 'success' and product_count is not None:
+            cw_metrics[0]["Metrics"].append({"Name": "ProductCount", "Unit": "Count"})
+
+        # --- Build payload ---
+        payload: Dict[str, Union[str, int, float, dict, list]] = {
+            "_aws": {
+                "Timestamp": int(time.time() * 1000),
+                "CloudWatchMetrics": cw_metrics
+            },
             "Outcome": outcome,
             "Retailer": self.scraper_name,
             "ProxyId": proxy_id,
             "ResponseTime": response_time_ms,
         }
 
-        # Add additional metadata.
+        # Add standard metadata
         payload.update({
             "Urls": urls,
             "StatusCode": status,
-            "SanitizationRate": sanitization_rate
+            "SanitizationRate": sanitization_rate,
         })
         if error_msg:
-            payload.update({
-                'Error': error_msg
-            })
+            payload["Error"] = error_msg
 
-        # Print the EMF log.
-        self.logger.info('\n')
+        # Add ProductCount field in payload only on success
+        if outcome == 'success' and product_count is not None:
+            payload["ProductCount"] = product_count
+
+        # --- Emit logs ---
+        self.logger.info("")  # blank line
         self.logger.info(json.dumps(payload))
-        self.logger.info('\n')
+        self.logger.info("")  # blank line
 
         return outcome
+
 
 
     def log_processing_error(self, message: str, proxy_id: Optional[str] = None):
