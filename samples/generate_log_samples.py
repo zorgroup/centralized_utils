@@ -4,6 +4,18 @@ import logging
 from pathlib import Path
 from centralized_utils.logger_v1 import LogController
 
+def simulate_success2():
+    print("\n\n=== Success Test (with product_count) ===\n")
+    outcome = LOG_CONTROLLER.log_request(
+        sanitization_rate=75.0,
+        response_time_ms=2000.5,
+        status=200,
+        error_msg=None,
+        urls=["https://example.com/p1"],
+        proxy_id="proxy-123",
+        product_count=3
+    )
+    print(f"Returned outcome: {outcome}\n")
 
 
 def simulate_success():
