@@ -1,6 +1,6 @@
 {
     "_aws": {
-        "Timestamp": 1750140459654,
+        "Timestamp": 1750696422866,
         "CloudWatchMetrics": [
             {
                 "Namespace": "ws_main_v1",
@@ -15,6 +15,10 @@
                     {
                         "Name": "ResponseTime",
                         "Unit": "Milliseconds"
+                    },
+                    {
+                        "Name": "ProductCount",
+                        "Unit": "Count"
                     }
                 ]
             }
@@ -29,5 +33,6 @@
         "https://www.retailer.com/product2"
     ],
     "StatusCode": 200,
-    "SanitizationRate": 60.5
+    "SanitizationRate": 60.5,
+    "ProductCount": 2
 }

@@ -27,7 +27,8 @@ def simulate_success():
         status=200, 
         error_msg=None, 
         proxy_id='prox-4a-proxyrotator-100thread:datacenter-worldwide_ipv4', 
-        urls=['https://www.retailer.com/product1', 'https://www.retailer.com/product2']
+        urls=['https://www.retailer.com/product1', 'https://www.retailer.com/product2'],
+        product_count=2
     )
     
     print('----------------------------------------------------------------------------------------------------------')
