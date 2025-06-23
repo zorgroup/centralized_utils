@@ -140,14 +140,14 @@ class LogController:
         cw_metrics = [{
                 "Namespace": self.namespace,
                 "Dimensions": self.emf_dimensions,
-                "Metrics": [{"Name": "RequestCount", "Unit": "Count"}]
+                "Metrics": [{"Name": "ProductCount", "Unit": "Count"}]
             }]
         payload = {
             "_aws": {"Timestamp": int(time.time() * 1000), "CloudWatchMetrics": cw_metrics},
             "Outcome": 's3_upload',
             "Retailer": self.scraper_name,
             "ProxyId": proxy_id if proxy_id else 'N/A',
-            "RequestCount": product_count,
+            "ProductCount": product_count,
         }
 
         # Add additional metadata.
@@ -181,14 +181,14 @@ class LogController:
         cw_metrics = [{
                 "Namespace": self.namespace,
                 "Dimensions": self.emf_dimensions,
-                "Metrics": [{"Name": "RequestCount", "Unit": "Count"}]
+                "Metrics": [{"Name": "ProductCount", "Unit": "Count"}]
             }]
         payload = {
             "_aws": {"Timestamp": int(time.time() * 1000), "CloudWatchMetrics": cw_metrics},
             "Outcome": 'products',
             "Retailer": self.scraper_name,
             "ProxyId": proxy_id,
-            "RequestCount": len(products),
+            "ProductCount": len(products),
         }
 
         # Print the EMF log.
