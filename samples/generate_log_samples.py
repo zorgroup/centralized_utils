@@ -7,13 +7,13 @@ from centralized_utils.logger_v1 import LogController
 def simulate_success2():
     print("\n\n=== Success Test (with product_count) ===\n")
     outcome = LOG_CONTROLLER.log_request(
-        sanitization_rate=75.0,
+        total_product_count=3,
+        sanitized_product_count=2,
         response_time_ms=2000.5,
         status=200,
         error_msg=None,
-        urls=["https://example.com/p1"],
+        redis_urls=["https://example.com/p1"],
         proxy_id="proxy-123",
-        product_count=3
     )
     print(f"Returned outcome: {outcome}\n")
 
@@ -22,13 +22,13 @@ def simulate_success():
     print('\n\n\n\n\n\n\n\nsuccess:')
     
     LOG_CONTROLLER.log_request(
-        sanitization_rate=60.5, 
+        total_product_count=3,
+        sanitized_product_count=2,
         response_time_ms=3532, 
         status=200, 
         error_msg=None, 
         proxy_id='prox-4a-proxyrotator-100thread:datacenter-worldwide_ipv4', 
-        urls=['https://www.retailer.com/product1', 'https://www.retailer.com/product2'],
-        product_count=2
+        redis_urls=['https://www.retailer.com/product1', 'https://www.retailer.com/product2', 'https://www.retailer.com/product3'],
     )
     
     print('----------------------------------------------------------------------------------------------------------')
@@ -41,12 +41,13 @@ def simulate_proxy_issue():
     print('\n\n\n\n\n\n\n\nproxy_issue:')
     
     LOG_CONTROLLER.log_request(
-        sanitization_rate=0.0, 
+        total_product_count=0,
+        sanitized_product_count=0,
         response_time_ms=3532, 
         status=403, 
         error_msg=None, 
         proxy_id='prox-4a-proxyrotator-100thread:datacenter-worldwide_ipv4', 
-        urls=['https://www.retailer.com/product1']
+        redis_urls=['https://www.retailer.com/product1']
     )
     
     print('----------------------------------------------------------------------------------------------------------')
@@ -59,12 +60,13 @@ def simulate_scraper_issue():
     print('\n\n\n\n\n\n\n\nscraper_issue:')
     
     LOG_CONTROLLER.log_request(
-        sanitization_rate=0.0, 
+        total_product_count=0,
+        sanitized_product_count=0,
         response_time_ms=3532, 
         status=200, 
         error_msg='error extracting product data in line 215', 
         proxy_id='prox-4a-proxyrotator-100thread:datacenter-worldwide_ipv4', 
-        urls=['https://www.retailer.com/product1', 'https://www.retailer.com/product2']
+        redis_urls=['https://www.retailer.com/product1', 'https://www.retailer.com/product2']
     )
     
     print('----------------------------------------------------------------------------------------------------------')

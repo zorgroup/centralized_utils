@@ -25,40 +25,62 @@ class LogController:
 
     def log_request(
         self,
-        sanitization_rate: Union[float, int],
+        total_product_count: int,
+        sanitized_product_count: int,
         response_time_ms: Optional[float],
         status: Optional[int],
         error_msg: Optional[str],
-        urls: List[str],
+        redis_urls: List[str],
         proxy_id: str,
-        product_count: Optional[int] = None,
     ) -> str:
         """
-        Emits an EMF payload for CloudWatch.
+        Emits EMF payloads for CloudWatch.
         This function will log one of the following request outcomes:
             1. success
             2. proxy_issue
             3. scraper_issue
-        If outcome == "success" and product_count is given, emits an extra ProductCount metric.
+        
+        If outcome == "success", emits an extra ProductCount metric.
+
+        Scraper Variations in regards to how they handle Redis URLs, and then how these effect log behaviour:
+            1. Product URLs based: Redis contains Product URLs, redis goes down by 1, scraper makes 1 request, extracts 1 product, emits 1 log outcome "success/proxy_issue/scraper_issue". Example: ws_oreilly_m9, ws_amazon_m1
+            2. Pagination URLs based: Redis contains Pagination URLs, redis goes down by 1, scraper makes 1 request, extracts multiple (e.g. 15) products, emits 1 log outcome "success/proxy_issue/scraper_issue". Example: ws_rockauto_m2, ws_finditparts_m4, ws_walmart_m4
+            3. Bulk APIs based: Redis contains Product URLs/IDs, redis goes down by bulk (e.g. 50), scraper makes 1 request to a bulk API, extracts 50 products, emits 50 log outcomes "success/proxy_issue/scraper_issue". e.g. ws_fleetpride_m1, ws_autozone_m2.
         """
 
         # --- Value Assertions ---
-        if type(sanitization_rate) not in (float, int):
-            raise ValueError(f'sanitization_rate must be float or int, received: {sanitization_rate}')
-        if not proxy_id or not urls:
+        if type(total_product_count) != int:
+            raise ValueError(f'total_product_count must be int, received: {type(total_product_count)}')
+        # --- Value Assertions ---
+        if type(sanitized_product_count) != int:
+            raise ValueError(f'sanitized_product_count must be int, received: {type(sanitized_product_count)}')
+        if not proxy_id or not redis_urls:
             raise ValueError("Both 'proxy_id' and 'urls' must be provided.")
 
         # --- Normalize response_time ---
         if response_time_ms is None:
             response_time_ms = 0.0
 
+        # --- Calculate sanitization rate ---
+        sanitization_rate = (len(sanitized_product_count) / len(total_product_count) * 100) if total_product_count else 0
+
         # --- Determine outcome ---
-        if status == 200 and sanitization_rate >= 50.0:
+        if status == 200 and sanitization_rate >= 50.0 and sanitized_product_count > 0:
             outcome = 'success'
         elif status in (403, 429):
             outcome = 'proxy_issue'
         else:
             outcome = 'scraper_issue'
+
+        # --- Calculate Number of Logs that we need to emit ---
+        # The number of logs we emit, must be equal to the number of urls that were popped from redis, even if all those urls were scraped using a single API request.
+        emit_multiple_logs = True if len(redis_urls) > 1 else False
+        if emit_multiple_logs:
+            # Log outcome for each redis_url. (Scraper Variation 3)
+            number_of_logs_to_emit = len(redis_urls)
+        else:
+            # Log single outcome (Scraper Variation 1 and 2)
+            number_of_logs_to_emit = 1
 
         # --- Build metric definitions ---
         cw_metrics = [{
@@ -69,8 +91,8 @@ class LogController:
             ]
         }]
 
-        # Only for success, include ProductCount metric
-        if outcome == 'success' and product_count is not None:
+        # Only for success, include additional ProductCount metric
+        if outcome == 'success':
             cw_metrics[0]["Metrics"].append({"Name": "ProductCount", "Unit": "Count"})
 
         # --- Build payload ---
@@ -87,21 +109,27 @@ class LogController:
 
         # Add standard metadata
         payload.update({
-            "Urls": urls,
+            "Urls": redis_urls,
             "StatusCode": status,
             "SanitizationRate": sanitization_rate,
         })
         if error_msg:
             payload["Error"] = error_msg
 
-        # Add ProductCount field in payload only on success
-        if outcome == 'success' and product_count is not None:
-            payload["ProductCount"] = product_count
+        # Add ProductCount field in payload only on success.
+        #   If we are emiting a single success logs (Scraper Variation 1 and 2), we want to count all the products in that single log.
+        #   If we are emiting multiple success logs (Scraper Variation 3), we want to count a single product per each success log.
+        if outcome == 'success':
+            payload["ProductCount"] = 1 if emit_multiple_logs else sanitized_product_count
 
-        # --- Emit logs ---
-        self.logger.info("")  # blank line
-        self.logger.info(json.dumps(payload))
-        self.logger.info("")  # blank line
+        # --- Emit the logs ---
+        for i in range(number_of_logs_to_emit):
+            # Update timestamp for each emitted log.
+            payload['_aws']['Timestamp'] = int(time.time() * 1000)
+            # Emit the log
+            self.logger.info("")  # blank line
+            self.logger.info(json.dumps(payload))
+            self.logger.info("")  # blank line
 
         return outcome
 
