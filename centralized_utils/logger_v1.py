@@ -98,7 +98,7 @@ class LogController:
         # --- Build payload ---
         payload: Dict[str, Union[str, int, float, dict, list]] = {
             "_aws": {
-                "Timestamp": int(time.time() * 1000),
+                #"Timestamp": int(time.time() * 1000),
                 "CloudWatchMetrics": cw_metrics
             },
             "Outcome": outcome,
@@ -109,7 +109,7 @@ class LogController:
 
         # Add standard metadata
         payload.update({
-            "Urls": redis_urls,
+            #"Url": redis_urls,
             "StatusCode": status,
             "SanitizationRate": sanitization_rate,
         })
@@ -124,8 +124,9 @@ class LogController:
 
         # --- Emit the logs ---
         for i in range(number_of_logs_to_emit):
-            # Update timestamp for each emitted log.
+            # Update timestamp and url for each emitted log.
             payload['_aws']['Timestamp'] = int(time.time() * 1000)
+            payload['Url'] = redis_urls[i]
             # Emit the log
             self.logger.info("")  # blank line
             self.logger.info(json.dumps(payload))
