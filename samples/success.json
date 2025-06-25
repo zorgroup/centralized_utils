@@ -1,6 +1,5 @@
 {
     "_aws": {
-        "Timestamp": 1750814750213,
         "CloudWatchMetrics": [
             {
                 "Namespace": "ws_main_v1",
@@ -22,18 +21,15 @@
                     }
                 ]
             }
-        ]
+        ],
+        "Timestamp": 1750815334571
     },
     "Outcome": "success",
     "Retailer": "ws_retailer_m1",
     "ProxyId": "prox-4a-proxyrotator-100thread:datacenter-worldwide_ipv4",
     "ResponseTime": 3532,
-    "Urls": [
-        "https://www.retailer.com/product1",
-        "https://www.retailer.com/product2",
-        "https://www.retailer.com/product3"
-    ],
     "StatusCode": 200,
     "SanitizationRate": 66.66666666666666,
-    "ProductCount": 1
+    "ProductCount": 1,
+    "Url": "https://www.retailer.com/product1"
 }
