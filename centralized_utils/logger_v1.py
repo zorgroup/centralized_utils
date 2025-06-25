@@ -7,7 +7,7 @@ from typing import Optional, Union, List, Dict
 class LogController:
     def __init__(self, scraper_name: str):
         """namespace: Shared CloudWatch namespace for metrics."""
-        self.namespace = 'ws_main_v1'
+        self.namespace = 'ws_main_v2'
         self.logger = self._setup_logging()
         self.scraper_name = scraper_name
         self.emf_dimensions = [["Outcome", "Retailer", "ProxyId"]]
