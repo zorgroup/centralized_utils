@@ -57,7 +57,7 @@ class LogController:
         if not proxy_id or not redis_urls:
             raise ValueError("Both 'proxy_id' and 'urls' must be provided.")
         if type(redis_urls) != list:
-            raise ValueError(f'redis_urls must be list[dict], received: {type(redis_urls)}')
+            raise ValueError(f'redis_urls must be list[str], received: {type(redis_urls)}')
 
         # --- Normalize response_time ---
         if response_time_ms is None:
