@@ -62,7 +62,7 @@ class LogController:
             response_time_ms = 0.0
 
         # --- Calculate sanitization rate ---
-        sanitization_rate = (len(sanitized_product_count) / len(total_product_count) * 100) if total_product_count else 0
+        sanitization_rate = (sanitized_product_count / total_product_count * 100) if total_product_count else 0
 
         # --- Determine outcome ---
         if status == 200 and sanitization_rate >= 50.0 and sanitized_product_count > 0:
