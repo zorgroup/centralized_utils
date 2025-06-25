@@ -1,6 +1,6 @@
 {
     "_aws": {
-        "Timestamp": 1750696422869,
+        "Timestamp": 1750814750217,
         "CloudWatchMetrics": [
             {
                 "Namespace": "ws_main_v1",
@@ -28,5 +28,5 @@
         "https://www.retailer.com/product1"
     ],
     "StatusCode": 403,
-    "SanitizationRate": 0.0
+    "SanitizationRate": 0
 }
