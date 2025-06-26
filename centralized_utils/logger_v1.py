@@ -66,10 +66,19 @@ class LogController:
         # --- Calculate sanitization rate ---
         sanitization_rate = (sanitized_product_count / total_product_count * 100) if total_product_count else 0
 
+        # Use this list to determine 'proxy_issue' based on the 'error_msg'
+        # Currently this list has only 'Failed to perform, curl' errors, so no need to iterate over it. But in the future it might grow to hold more different kinds of errors.
+        proxy_related_error_messages = [                                 
+            'Failed to perform, curl: (56) CONNECT tunnel failed',
+            'Failed to perform, curl: (28) Connection timed out',
+            'Failed to perform, curl: (35) TLS connect error',
+            'Failed to perform, curl: (35) BoringSSL SSL_connect'
+        ]
+
         # --- Determine outcome ---
         if status == 200 and sanitization_rate >= 50.0 and sanitized_product_count > 0:
             outcome = 'success'
-        elif status in (403, 429):
+        elif status in (403, 429) or (error_msg and 'Failed to perform, curl' in error_msg):
             outcome = 'proxy_issue'
         else:
             outcome = 'scraper_issue'
