@@ -2,7 +2,7 @@
     "_aws": {
         "CloudWatchMetrics": [
             {
-                "Namespace": "ws_main_v1",
+                "Namespace": "ws_main_v2",
                 "Dimensions": [
                     [
                         "Outcome",
@@ -22,7 +22,7 @@
                 ]
             }
         ],
-        "Timestamp": 1750815334571
+        "Timestamp": 1750907425476
     },
     "Outcome": "success",
     "Retailer": "ws_retailer_m1",

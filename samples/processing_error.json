@@ -1,9 +1,9 @@
 {
     "_aws": {
-        "Timestamp": 1750815334579,
+        "Timestamp": 1750907425482,
         "CloudWatchMetrics": [
             {
-                "Namespace": "ws_main_v1",
+                "Namespace": "ws_main_v2",
                 "Dimensions": [
                     [
                         "Outcome",
