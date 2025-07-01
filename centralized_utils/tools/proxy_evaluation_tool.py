@@ -80,7 +80,7 @@ async def evaluate_proxy_subscription(subscription_id: str, ip_gateways: list, n
 
 
     print(f'\n\nEvaluating proxy id: {subscription_id}')
-    async with requests.AsyncSession() as session:
+    async with requests.AsyncSession() as session:           # Using a persistent session results in much higher success rate for some vendors like geonode. Reason unknown.
         tasks = []
         semaphore = asyncio.Semaphore(concurrency)
         for _ in range(num_requests_to_test):
