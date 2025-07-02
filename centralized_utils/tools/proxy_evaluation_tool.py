@@ -45,7 +45,7 @@ def load_proxy_subscriptions(redis_client):
 async def fetch_ip_info(gateway_url, semaphore):
     async with semaphore:
         async with aiohttp.ClientSession() as session:
-            async with session.get(f'https://ipinfo.io/json?val={random.randint(1,10000)}', proxy=gateway_url, timeout=15, ssl=False) as response:
+            async with session.get(f'https://ipinfo.io/json?val={random.randint(1,10000)}', proxy=gateway_url, timeout=10, ssl=False) as response:
                 if response.status != 200:
                     raise Exception(f'Invalid status: {response.status}')
                 data = await response.json()
@@ -158,8 +158,8 @@ async def main():
             evaluate_proxy_subscription(
                 subscription_id=subscription_id, 
                 ip_gateways=ip_gateways,
-                num_requests_to_test=10_000,
-                concurrency=5
+                num_requests_to_test=100_000,
+                concurrency=10
             )
         )
         tasks.append(task)
