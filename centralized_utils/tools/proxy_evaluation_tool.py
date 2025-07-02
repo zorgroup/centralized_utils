@@ -1,3 +1,26 @@
+'''
+Current state of the Proxy Evaluation Tool:
+    It is a reusable python script that pulls all our Proxy Subscription IDs from production Redis, and then runs a test for 100,000 requests on each one of them.
+    Currently it only works with autorotating Gateways as that is all we have. The following metrics get printed for each subcription ID:
+        - Proxy ID
+        - Request Count
+        - Success Count
+        - Success Rate
+        - Unique IPs
+        - Unique Subnets
+        - IP Countries
+        - Time Taken
+Future Improvements:
+    Although I am not planning to implement these at present, these are some improvements to consider for future:
+        - Residential/Datacenter IP count for each subscription_id.
+        - Average proxy score for each subscription_id (e.g. https://scamalytics.com/ip/209.135.168.41)
+        - Implement for sticky sessions and static IPs.
+        - Save results to a postgres table.
+        - Run the proxy evaluation tool as a scheduled cron job every month.
+'''
+
+
+
 import os
 import redis
 import random
@@ -22,8 +45,13 @@ def get_redis_client():
 
 
 
-def load_proxy_subscriptions(redis_client):    
-    proxy_subscriptions = {}      # Keys are subsctiption ids, values are list of IPs.
+def load_proxy_subscriptions(redis_client):   
+    '''
+    Load all proxy subscriptions from redis and return as a dictionary where:
+        - Keys are subsctiption ids
+        - Values are the list of gateway IPs.
+    ''' 
+    proxy_subscriptions = {} 
     
     # Get all subscription ids stored on redis.
     _, keys = redis_client.scan(cursor=0, match="prox*", count=5000)
@@ -43,6 +71,9 @@ def load_proxy_subscriptions(redis_client):
 
 
 async def fetch_ip_info(gateway_url, semaphore):
+    '''
+    Return ip, subnet, country for a single request.
+    '''
     async with semaphore:
         async with aiohttp.ClientSession() as session:
             async with session.get(f'https://ipinfo.io/json?val={random.randint(1,10000)}', proxy=gateway_url, timeout=10, ssl=False) as response:
@@ -57,6 +88,9 @@ async def fetch_ip_info(gateway_url, semaphore):
 
 
 async def evaluate_proxy_subscription(subscription_id: str, ip_gateways: list, num_requests_to_test: int, concurrency: int):
+    '''
+    Evaulate performance of a single proxy_subscrition_id, and append results to file.
+    '''
     # Create stats
     request_count = 0
     success_count = 0
@@ -72,15 +106,23 @@ async def evaluate_proxy_subscription(subscription_id: str, ip_gateways: list, n
 
     print(f'\n\nEvaluating proxy id: {subscription_id}')
     semaphore = asyncio.Semaphore(concurrency)
+    
+    
+    # Make requests as per concurrency and num_requests_to_test.
     tasks = []
     for _ in range(num_requests_to_test):
         gateway_url = f'http://' + random.choice(ip_gateways)
         tasks.append(fetch_ip_info(gateway_url, semaphore))
 
+    # Process result of each request as soon as it completes.
     for i, task in enumerate(asyncio.as_completed(tasks), 1):
+        # Increment request count.
         request_count += 1
         try:
+            # Retrieve results.
             ip, subnet, country = await task
+            
+            # Increment success count.
             success_count += 1
 
             # Increment country counts (before saving ip).
@@ -95,6 +137,7 @@ async def evaluate_proxy_subscription(subscription_id: str, ip_gateways: list, n
             subnet_pool.add(subnet)
         
         except:
+            # Increment error count.
             error_count += 1
         
         finally:        
