@@ -1,40 +1,33 @@
 Proxy ID:        prox-4a-proxyrotator-100thread:datacenter-us-ipv4
 Request Count:   10,000
-Unique IPs:      5,808
+Success Count:   10,000
+Success Rate:    100.0 %
+Unique IPs:      5,766
 Unique Subnets:  32
-IP Countries:    {'US': 5808, 'Worldwide': 0}
+IP Countries:    {'US': 5766, 'Worldwide': 0}
+Time Taken:      0:43:02
 
 
 
 Proxy ID:        prox-4a-proxyrotator-100thread:datacenter-worldwide_ipv4
 Request Count:   10,000
-Unique IPs:      6,700
+Success Count:   9,986
+Success Rate:    99.9 %
+Unique IPs:      6,715
 Unique Subnets:  60
-IP Countries:    {'US': 1911, 'Worldwide': 4789}
+IP Countries:    {'US': 1955, 'Worldwide': 4760}
+Time Taken:      0:53:30
 
 
 
-Proxy ID:        prox-5a-geonode:datacenter-usa-rotating
+Proxy ID:        prox-5a-geonode:datacenter-worldwide-rotating
 Request Count:   10,000
-Unique IPs:      8,576
-Unique Subnets:  7,587
-IP Countries:    {'US': 8574, 'Worldwide': 2}
-
-
-
-Proxy ID:        prox-5a-geonode:residential-usa-rotating
-Request Count:   10,000
-Unique IPs:      8,947
-Unique Subnets:  6,410
-IP Countries:    {'US': 8943, 'Worldwide': 4}
-
-
-
-Proxy ID:        prox-4a-proxyrotator-100thread:residential-worldwide_ipv4
-Request Count:   10,000
-Unique IPs:      1,487
-Unique Subnets:  1,221
-IP Countries:    {'US': 2, 'Worldwide': 1485}
+Success Count:   3,597
+Success Rate:    36.0 %
+Unique IPs:      564
+Unique Subnets:  36
+IP Countries:    {'US': 564, 'Worldwide': 0}
+Time Taken:      0:59:52
 
 
 

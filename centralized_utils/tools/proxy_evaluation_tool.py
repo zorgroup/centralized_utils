@@ -158,7 +158,7 @@ async def main():
             evaluate_proxy_subscription(
                 subscription_id=subscription_id, 
                 ip_gateways=ip_gateways,
-                num_requests_to_test=100,
+                num_requests_to_test=10_000,
                 concurrency=5
             )
         )
