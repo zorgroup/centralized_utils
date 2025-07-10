@@ -14,6 +14,7 @@ Future Improvements:
     Although I am not planning to implement these at present, these are some improvements to consider for future:
         - Residential/Datacenter IP count for each subscription_id.
         - Average proxy score for each subscription_id (e.g. https://scamalytics.com/ip/209.135.168.41)
+        - Percentage of IPs blacklisted.
         - Implement for sticky sessions and static IPs.
         - Save results to a postgres table.
         - Run the proxy evaluation tool as a scheduled cron job every month.
