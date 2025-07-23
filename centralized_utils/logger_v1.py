@@ -240,9 +240,9 @@ class LogController:
         for product in products:
             product_info = {
                 'product_url': product['product_url'],
-                'price': product['price'] if 'price' in product else None,
-                'in_stock': product['in_stock'],
-                'currency': product['currency'] if 'currency' in product else None
+                'price': product['price'] if 'price' in product else 'missing',
+                'in_stock': product['in_stock'] if 'in_stock' in product else 'missing',
+                'currency': product['currency'] if 'currency' in product else 'missing'
             }
             self.logger.info(f'product: {json.dumps(product_info)}')
 
