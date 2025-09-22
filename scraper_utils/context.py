@@ -70,6 +70,8 @@ class GlobalScraperContext():
         self.aws_access_key_id_prod:         str                     = None
         self.aws_secret_access_key_prod:     str                     = None
 
+        print('Using Scraper Utils v1.0')
+
 
     def confirm_all_mandatory_fields_are_initialized(self):
         '''Raises an exception if any of the mandatory global context variables are not initialized.'''
