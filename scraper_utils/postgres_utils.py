@@ -86,7 +86,7 @@ async def load_scraper_configuration(context: GlobalScraperContext):
 
 
 
-async def check_container_state(context: GlobalScraperContext):
+async def check_if_restart_required(context: GlobalScraperContext):
     try:
         # Read scraper configuration from postgres.
         pool = context.postgres_client
@@ -94,7 +94,13 @@ async def check_container_state(context: GlobalScraperContext):
             query = "SELECT container_state FROM scrapers.scrapers_configuration WHERE scraper_name = $1;"
             row = await conn.fetchrow(query, context.scraper_name)
             container_state = row[0]
-            return container_state
-
+            
+            # Set exit code to 1. This is important, so scraper would restart with new configuration.
+            if container_state == 0:
+                context.exit_code = 1
+                return True
+            else:
+                return False
+            
     except Exception as e:
         context.logger.log_processing_error(message=f"Error while checking container state - {str(e)}", proxy_id=None)
