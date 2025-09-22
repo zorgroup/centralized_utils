@@ -6,7 +6,7 @@ from .context import GlobalScraperContext
 class Proxy():
     def __init__(self, proxy_id, url: str):
         self.proxy_id = proxy_id
-        self.url = url
+        self.http_url = url
         if '@' in url:  # Username/password authentication. 
             proxy_string = url.split('//')[1] 
             self.ip = proxy_string.split('@')[1].split(':')[0]
