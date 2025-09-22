@@ -86,7 +86,10 @@ async def load_scraper_configuration(context: GlobalScraperContext):
 
 
 
-async def check_if_restart_required(context: GlobalScraperContext):
+async def check_if_restart_required(context: GlobalScraperContext) -> bool:
+    '''
+    Check if the container/scraper needs to restart (to load new config).
+    '''
     try:
         # Read scraper configuration from postgres.
         pool = context.postgres_client
