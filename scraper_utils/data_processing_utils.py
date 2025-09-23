@@ -3,24 +3,24 @@ from datetime import datetime
 from .context import GlobalScraperContext
 
 
-def sanitize_products(context: GlobalScraperContext, dirty_products: list[dict]):
+def sanitize_products(context: GlobalScraperContext, unsanitized_products: list[dict]):
     # Determine which implementation of the sanitization function to call, based on scraper type.
     if context.scraper_type == 'ps':
-        sanitized_products, sanitization_rate = sanitize_products_ps(context, dirty_products)
+        sanitized_products, sanitization_rate = sanitize_products_ps(context, unsanitized_products)
     elif context.scraper_type == 'meta':
-        sanitized_products, sanitization_rate = sanitize_products_meta(context, dirty_products)
+        sanitized_products, sanitization_rate = sanitize_products_meta(context, unsanitized_products)
 
     return sanitized_products, sanitization_rate
 
 
 # Function to sanitize product data, updating schema should be not done unless mudassir authorizes it.
-def sanitize_products_ps(context: GlobalScraperContext, dirty_products: list[dict]):
+def sanitize_products_ps(context: GlobalScraperContext, unsanitized_products: list[dict]):
     sanitized_products = []
 
-    if not isinstance(dirty_products, list):
-        raise ValueError(f"'dirty_products' must be of type 'list[dict]'. Got '{type(dirty_products)}' instead")
+    if not isinstance(unsanitized_products, list):
+        raise ValueError(f"'dirty_products' must be of type 'list[dict]'. Got '{type(unsanitized_products)}' instead")
     
-    for product in dirty_products:
+    for product in unsanitized_products:
         try:
             schema = {
                 "product_url": {"type": str, "required":True},
@@ -91,7 +91,7 @@ def sanitize_products_ps(context: GlobalScraperContext, dirty_products: list[dic
             context.logger.log_info(f'Failed to sanitize product - {str(e)} Product: {product}')
             continue  # Continue with the next product.
     
-    sanitization_rate = (len(sanitized_products) / len(dirty_products) * 100) if dirty_products else 0
+    sanitization_rate = (len(sanitized_products) / len(unsanitized_products) * 100) if unsanitized_products else 0
 
     return sanitized_products, sanitization_rate
 
@@ -99,13 +99,13 @@ def sanitize_products_ps(context: GlobalScraperContext, dirty_products: list[dic
 
 
 # Function to sanitize product data, updating schema should be not done unless mudassir authorizes it.
-def sanitize_products_meta(context: GlobalScraperContext, dirty_products: list[dict]):
+def sanitize_products_meta(context: GlobalScraperContext, unsanitized_products: list[dict]):
     sanitized_products = []
 
-    if not isinstance(dirty_products, list):
-        raise ValueError(f"'dirty_products' must be of type 'list[dict]'. Got '{type(dirty_products)}' instead")
+    if not isinstance(unsanitized_products, list):
+        raise ValueError(f"'dirty_products' must be of type 'list[dict]'. Got '{type(unsanitized_products)}' instead")
     
-    for product in dirty_products:
+    for product in unsanitized_products:
         try:
             schema = {
                 "product_url": {"type": str, "required":True},
@@ -181,7 +181,7 @@ def sanitize_products_meta(context: GlobalScraperContext, dirty_products: list[d
             context.logger.log_info(f'Failed to sanitize product - {str(e)} Product: {product}')
             continue  # Continue with the next product.
     
-    sanitization_rate = (len(sanitized_products) / len(dirty_products) * 100) if dirty_products else 0
+    sanitization_rate = (len(sanitized_products) / len(unsanitized_products) * 100) if unsanitized_products else 0
 
     return sanitized_products, sanitization_rate
 
