@@ -1,4 +1,5 @@
 import os
+import json
 import asyncpg
 from .context import GlobalScraperContext
 
@@ -73,6 +74,10 @@ async def load_scraper_configuration(context: GlobalScraperContext):
         context.redis_seen_products_key = psql_scraper_config['seen_products_key']
         context.proxy_ids = psql_scraper_config['proxy_ids'] 
         context.scraper_type = psql_scraper_config['scraper_type']
+        
+        api_keys = psql_scraper_config['api_keys']
+        if api_keys:
+            context.api_keys = json.loads(psql_scraper_config['api_keys'])
 
         if context.running_environment == 'prod':
             context.redis_host_prod = psql_scraper_config['redis_host']                       

@@ -69,6 +69,7 @@ class GlobalScraperContext():
         self.aws_secret_access_key_dev:      str                     = None
         self.aws_access_key_id_prod:         str                     = None
         self.aws_secret_access_key_prod:     str                     = None
+        self.api_keys:                       dict                    = None
 
         print('Using Scraper Utils v1.0')
 
