@@ -3,24 +3,24 @@ from datetime import datetime
 from .context import GlobalScraperContext
 
 
-def sanitize_products(context: GlobalScraperContext, unsanitized_products: list[dict]):
+def sanitize_products(context: GlobalScraperContext, products: list[dict]):
     # Determine which implementation of the sanitization function to call, based on scraper type.
     if context.scraper_type == 'ps':
-        sanitized_products, sanitization_rate = sanitize_products_ps(context, unsanitized_products)
+        sanitized_products, sanitization_rate = sanitize_products_ps(context, products)
     elif context.scraper_type == 'meta':
-        sanitized_products, sanitization_rate = sanitize_products_meta(context, unsanitized_products)
+        sanitized_products, sanitization_rate = sanitize_products_meta(context, products)
 
     return sanitized_products, sanitization_rate
 
 
 # Function to sanitize product data, updating schema should be not done unless mudassir authorizes it.
-def sanitize_products_ps(context: GlobalScraperContext, unsanitized_products: list[dict]):
+def sanitize_products_ps(context: GlobalScraperContext, products: list[dict]):
     sanitized_products = []
 
-    if not isinstance(unsanitized_products, list):
-        raise ValueError(f"'dirty_products' must be of type 'list[dict]'. Got '{type(unsanitized_products)}' instead")
+    if not isinstance(products, list):
+        raise ValueError(f"'dirty_products' must be of type 'list[dict]'. Got '{type(products)}' instead")
     
-    for product in unsanitized_products:
+    for p in products:
         try:
             schema = {
                 "product_url": {"type": str, "required":True},
@@ -39,19 +39,19 @@ def sanitize_products_ps(context: GlobalScraperContext, unsanitized_products: li
             sanitized = {}
             # for each key/value in provided data validate its type, confirm its existence if required = True, and in the end format the fields as needed
             for field, rules in schema.items():
-                value = product.get(field)
+                value = p.get(field)
                 require = rules.get("required")
                 type_ = rules.get("type")
                 # Check if required field exists
                 if require == True and value in (None, "", "null", "undefined"):
                     # Edge case # 1 for price, if retailer is amazone and price is None, dont pass key/value any further
-                    if field == 'price' and product['retailer'] == 'Amazon':
+                    if field == 'price' and p['retailer'] == 'Amazon':
                         continue
                     # Edge case # 2 for price, if in_stock is false and price is None, dont pass key/value any further
-                    elif field == 'price' and product['in_stock'] == False:
+                    elif field == 'price' and p['in_stock'] == False:
                         continue
                     # Edge case # 3. Currency can be None, if price is None, don't pass key/value any further.
-                    elif field == 'currency' and product['price'] in (None, "", "null", "undefined"):
+                    elif field == 'currency' and p['price'] in (None, "", "null", "undefined"):
                         continue
                     # For anything else if required Field value is None, raise valueError
                     else:
@@ -88,10 +88,10 @@ def sanitize_products_ps(context: GlobalScraperContext, unsanitized_products: li
                 sanitized[field] = value
             sanitized_products.append(sanitized)
         except Exception as e:
-            context.logger.log_info(f'Failed to sanitize product - {str(e)} Product: {product}')
+            context.logger.log_info(f'Failed to sanitize product - {str(e)} Product: {p}')
             continue  # Continue with the next product.
     
-    sanitization_rate = (len(sanitized_products) / len(unsanitized_products) * 100) if unsanitized_products else 0
+    sanitization_rate = (len(sanitized_products) / len(products) * 100) if products else 0
 
     return sanitized_products, sanitization_rate
 
@@ -99,13 +99,13 @@ def sanitize_products_ps(context: GlobalScraperContext, unsanitized_products: li
 
 
 # Function to sanitize product data, updating schema should be not done unless mudassir authorizes it.
-def sanitize_products_meta(context: GlobalScraperContext, unsanitized_products: list[dict]):
+def sanitize_products_meta(context: GlobalScraperContext, products: list[dict]):
     sanitized_products = []
 
-    if not isinstance(unsanitized_products, list):
-        raise ValueError(f"'dirty_products' must be of type 'list[dict]'. Got '{type(unsanitized_products)}' instead")
+    if not isinstance(products, list):
+        raise ValueError(f"'dirty_products' must be of type 'list[dict]'. Got '{type(products)}' instead")
     
-    for product in unsanitized_products:
+    for p in products:
         try:
             schema = {
                 "product_url": {"type": str, "required":True},
@@ -132,7 +132,7 @@ def sanitize_products_meta(context: GlobalScraperContext, unsanitized_products: 
             sanitized = {}
             # for each key/value in provided data validate its type, confirm its existence if required = True, and in the end format the fields as needed
             for field, rules in schema.items():
-                value = product.get(field)
+                value = p.get(field)
                 require = rules.get("required")
                 type_ = rules.get("type")
                 # Check if required field exists
@@ -178,10 +178,10 @@ def sanitize_products_meta(context: GlobalScraperContext, unsanitized_products: 
                 sanitized[field] = value
             sanitized_products.append(sanitized)
         except Exception as e:
-            context.logger.log_info(f'Failed to sanitize product - {str(e)} Product: {product}')
+            context.logger.log_info(f'Failed to sanitize product - {str(e)} Product: {p}')
             continue  # Continue with the next product.
     
-    sanitization_rate = (len(sanitized_products) / len(unsanitized_products) * 100) if unsanitized_products else 0
+    sanitization_rate = (len(sanitized_products) / len(products) * 100) if products else 0
 
     return sanitized_products, sanitization_rate
 
