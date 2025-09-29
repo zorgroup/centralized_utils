@@ -42,16 +42,17 @@ async def close_redis_client(context: GlobalScraperContext):
 
 
 
-async def pop_urls_from_redis_temp(context: GlobalScraperContext) -> list[str]:
+async def pop_source_urls_from_redis_temp(context: GlobalScraperContext) -> list[str]:
     urls = await context.redis_client.spop(context.redis_source_key_temp, context.redis_batch_size)
+    context.logger.log_info(f'Popped {len(urls)} from redis.')
     return [url.decode('utf-8') for url in urls] if urls else []
 
 
 
-async def insert_urls_into_redis(context: GlobalScraperContext, destination_key: str, urls: list[str]):
+async def insert_failed_source_urls_into_redis_temp(context: GlobalScraperContext, source_urls: list[str]):
     try:
-        await context.redis_client.sadd(destination_key, *urls)
-        context.logger.log_info(message=f"Inserted {len(urls)} urls into redis set '{destination_key}'")
+        await context.redis_client.sadd(context.redis_source_key_temp, *source_urls)
+        context.logger.log_info(message=f"Inserted {len(source_urls)} failed urls into redis set '{context.redis_source_key_temp}'")
     except Exception as e:
         context.logger.log_processing_error(message=f'Failed to insert urls to redis: {e}', proxy_id=context.proxy_ids[0])
 
