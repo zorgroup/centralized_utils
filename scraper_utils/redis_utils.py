@@ -49,10 +49,10 @@ async def pop_source_urls_from_redis_temp(context: GlobalScraperContext) -> list
 
 
 
-async def insert_failed_source_urls_into_redis_temp(context: GlobalScraperContext, source_urls: list[str]):
+async def insert_failed_source_urls_into_redis_temp(context: GlobalScraperContext, urls: list[str]):
     try:
-        await context.redis_client.sadd(context.redis_source_key_temp, *source_urls)
-        context.logger.log_info(message=f"Inserted {len(source_urls)} failed urls into redis set '{context.redis_source_key_temp}'")
+        await context.redis_client.sadd(context.redis_source_key_temp, *urls)
+        context.logger.log_info(message=f"Inserted {len(urls)} failed urls into redis set '{context.redis_source_key_temp}'")
     except Exception as e:
         context.logger.log_processing_error(message=f'Failed to insert urls to redis: {e}', proxy_id=context.proxy_ids[0])
 
