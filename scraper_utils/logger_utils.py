@@ -31,7 +31,7 @@ class AWSLogger:
         response_time_ms: Optional[float],
         status: Optional[int],
         error_msg: Optional[str],
-        redis_urls: List[str],
+        source_urls: List[str],
         proxy_id: str,
     ) -> str:
         """
@@ -55,10 +55,10 @@ class AWSLogger:
         # --- Value Assertions ---
         if type(sanitized_product_count) != int:
             raise ValueError(f'sanitized_product_count must be int, received: {type(sanitized_product_count)}')
-        if not proxy_id or not redis_urls:
+        if not proxy_id or not source_urls:
             raise ValueError("Both 'proxy_id' and 'urls' must be provided.")
-        if type(redis_urls) != list:
-            raise ValueError(f'redis_urls must be list[str], received: {type(redis_urls)}')
+        if type(source_urls) != list:
+            raise ValueError(f'source_urls must be list[str], received: {type(source_urls)}')
 
         # --- Normalize response_time ---
         if response_time_ms is None:
@@ -86,10 +86,10 @@ class AWSLogger:
 
         # --- Calculate Number of Logs that we need to emit ---
         # The number of logs we emit, must be equal to the number of urls that were popped from redis, even if all those urls were scraped using a single API request.
-        emit_multiple_logs = True if len(redis_urls) > 1 else False
+        emit_multiple_logs = True if len(source_urls) > 1 else False
         if emit_multiple_logs:
-            # Log outcome for each redis_url. (Scraper Variation 3)
-            number_of_logs_to_emit = len(redis_urls)
+            # Log outcome for each source_url. (Scraper Variation 3)
+            number_of_logs_to_emit = len(source_urls)
         else:
             # Log single outcome (Scraper Variation 1 and 2)
             number_of_logs_to_emit = 1
@@ -121,7 +121,7 @@ class AWSLogger:
 
         # Add standard metadata
         payload.update({
-            #"Url": redis_urls,
+            #"Url": source_urls,
             "StatusCode": status,
             "SanitizationRate": sanitization_rate,
         })
@@ -138,7 +138,7 @@ class AWSLogger:
         for i in range(number_of_logs_to_emit):
             # Update timestamp and url for each emitted log.
             payload['_aws']['Timestamp'] = int(time.time() * 1000)
-            payload['Url'] = redis_urls[i]
+            payload['Url'] = source_urls[i]
             # Emit the log
             self.py_logger.info("")  # blank line
             self.py_logger.info(json.dumps(payload))
