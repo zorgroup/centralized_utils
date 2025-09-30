@@ -94,7 +94,7 @@ class GlobalScraperContext():
             raise Exception(f"Missing mandatory context variable: 'postgres_client'")
         if not self.s3_client:
             raise Exception(f"Missing mandatory context variable: 's3_client'")
-        if not self.concurrency:
+        if self.concurrency == None:    # Accept zero conurrency.
             raise Exception(f"Missing mandatory context variable: 'concurrency'")
         if not self.redis_batch_size:
             raise Exception(f"Missing mandatory context variable: 'redis_batch_size'")
