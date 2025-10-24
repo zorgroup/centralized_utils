@@ -74,6 +74,12 @@ async def load_scraper_configuration(context: GlobalScraperContext):
         context.redis_seen_products_key = psql_scraper_config['seen_products_key']
         context.proxy_ids = psql_scraper_config['proxy_ids'] 
         context.scraper_type = psql_scraper_config['scraper_type']
+        context.max_retries_same_cycle = psql_scraper_config['max_retries_same_cycle']
+        context.max_allowed_cycles_for_failed = psql_scraper_config['max_allowed_cycles_for_failed']
+        context.redis_temp_key = psql_scraper_config['source_key_temp']
+        context.redis_master_key = psql_scraper_config['source_key_master'] 
+        context.redis_failed_key = psql_scraper_config['redis_failed_key']
+        context.redis_dead_key = psql_scraper_config['redis_dead_key']
         
         api_keys = psql_scraper_config['api_keys']
         if api_keys:

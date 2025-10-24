@@ -33,10 +33,17 @@ class GlobalScraperContext():
         self.request_delay:                  float                   = None
         self.redis_batch_size:               int                     = None
         self.redis_source_key_temp:          str                     = None
+        self.redis_temp_key:                 str                     = None
+        self.redis_master_key:               str                     = None
+        self.redis_failed_key:               str                     = None
+        self.redis_dead_key:                 str                     = None
         self.redis_seen_products_key:        str                     = None
         self.s3_bulk_size:                   int                     = None
         self.s3_bucket_name:                 str                     = None
         self.scraper_type:                   str                     = None
+        self.max_retries_same_cycle:         int                     = None
+        self.max_allowed_cycles_for_failed:  int                     = None
+
 
         # Services
         self.logger:                         AWSLogger               = None
@@ -46,6 +53,7 @@ class GlobalScraperContext():
 
         # Misc
         self.scraper_start_time:             datetime                = datetime.now(timezone.utc)
+        self.redis_sha_for_popping                                   = None
         self.exit_code:                      int                     = 0
         
         # Credentials
