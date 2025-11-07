@@ -59,10 +59,16 @@ async def insert_failed_source_urls_into_redis_temp(context: GlobalScraperContex
 
 
 # Hash variant
-async def pop_sources_from_redis(context: GlobalScraperContext) -> list[dict]:
+async def pop_sources_from_redis2(context: GlobalScraperContext) -> list[dict]:
     """
     Atomically pop urls from Temp Hash for scraping.
-    Returns a list of dict containing Url and Retry Count.
+    
+    Returns a list of dicts containing keys 'src' and 'retries' e.g:
+        [
+            {"src": "r.com/p1", "retries": 1}, 
+            {"src": "r.com/p2", "retries": 0},
+            {"src": "r.com/p3", "retries": 2}
+        ]
     """
 
     # Use Lua script, to combine HRANDFIELD and HDEL into a signle atomic operation, simulating a Pop.
@@ -89,37 +95,46 @@ async def pop_sources_from_redis(context: GlobalScraperContext) -> list[dict]:
     if not flat_raw_list:  # No urls in redis.
         return []
 
-    source_urls_with_retry_count = [
-        {"url": flat_raw_list[i].decode(), "retries": int(flat_raw_list[i + 1].decode())}
+    sources = [
+        {"src": flat_raw_list[i].decode(), "retries": int(flat_raw_list[i + 1].decode())}
         for i in range(0, len(flat_raw_list), 2)
     ]
 
     context.logger.log_info(
-        f'Popped {len(source_urls_with_retry_count)} urls from redis hash "{context.redis_source_key_temp}".'
+        f'Popped {len(sources)} urls from redis hash "{context.redis_source_key_temp}".'
     )
 
-    return source_urls_with_retry_count
+    return sources
 
 
 # Hash variant
-async def insert_failed_sources_into_redis(context: GlobalScraperContext, sources: list[dict]):
+async def insert_failed_sources_into_redis2(context: GlobalScraperContext, sources: list[dict]):
     """
-    Reinsert failed URLs into the Temp Hash (with incremented retry counts),
-    or increment them in Failed Hash if max retries exceeded.
+    If max retries are not exhauseted, reinserts failed URLs into the Temp Hash (and increments the retry counts),
+    If max retries are exhauseted, inserts failed URLs into the Failed Hash (and increments the retry counts).
+
+    Expects two arguments:
+        1. context
+        2. sources: a list of dicts containing keys 'src' and 'retries' e.g:
+            [
+                {"src": "r.com/p1", "retries": 1}, 
+                {"src": "r.com/p2", "retries": 0},
+                {"src": "r.com/p3", "retries": 2}
+            ]
     """
     try:
         async with context.redis_client.pipeline(transaction=False) as pipe:
             for source in sources:
-                url = source["url"]
+                src = source["src"]
                 old_retry_count = int(source["retries"])
                 new_retry_count = old_retry_count + 1
 
                 if new_retry_count <= context.max_retries_same_cycle:
                     # Still eligible for retry — reinsert with incremented count
-                    pipe.hset(context.redis_temp_key, url, new_retry_count)
+                    pipe.hset(context.redis_temp_key, src, new_retry_count)
                 else:
                     # Retries exhausted — increment fail counter
-                    pipe.hincrby(context.redis_failed_key, url, 1)
+                    pipe.hincrby(context.redis_failed_key, src, 1)
 
             # Execute all queued commands in one batch
             await pipe.execute()
