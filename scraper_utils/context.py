@@ -79,7 +79,7 @@ class GlobalScraperContext():
         self.aws_secret_access_key_prod:     str                     = None
         self.api_keys:                       dict                    = None
 
-        print('Using Scraper Utils v1.0')
+        print('Using Scraper Utils v1.1')
 
 
     def confirm_all_mandatory_fields_are_initialized(self):
