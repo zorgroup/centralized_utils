@@ -88,6 +88,8 @@ class GlobalScraperContext():
             raise Exception(f"Missing mandatory context variable: 'scraper_name'")
         if not self.retailer_name:
             raise Exception(f"Missing mandatory context variable: 'retailer_name'")
+        if not self.scraper_type:
+            raise Exception(f"Missing mandatory context variable: 'scraper_type'")
         if not self.scraper_state:
             raise Exception(f"Missing mandatory context variable: 'scraper_state'")
         if not self.scraper_method_summary:
@@ -110,7 +112,5 @@ class GlobalScraperContext():
             raise Exception(f"Missing mandatory context variable: 's3_bulk_size'")
         if not self.s3_bucket_name:
             raise Exception(f"Missing mandatory context variable: 's3_bucket_name'")
-        if not self.scraper_type:
-            raise Exception(f"Missing mandatory context variable: 'scraper_type'")
         if not self.redis_source_key_temp:
             raise Exception(f"Missing mandatory context variable: 'redis_source_key_temp'")
