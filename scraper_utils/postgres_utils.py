@@ -56,7 +56,7 @@ async def load_scraper_configuration(context: GlobalScraperContext):
         pool = context.postgres_client
         async with pool.acquire() as conn:
             async with conn.transaction():
-                if context.scraper_type == 'ps':
+                if context.scraper_type == 'ps' or context.scraper_type == 'url_discovery':
                     query = "SELECT * FROM scrapers.scrapers_configuration WHERE scraper_name = $1;"
                 elif context.scraper_type == 'meta':
                     query = "SELECT * FROM scrapers_meta.scrapers_configuration_meta WHERE scraper_name = $1;" 
@@ -108,7 +108,7 @@ async def check_if_restart_required(context: GlobalScraperContext) -> bool:
         # Read scraper configuration from postgres.
         pool = context.postgres_client
         async with pool.acquire() as conn:
-            if context.scraper_type == 'ps':
+            if context.scraper_type == 'ps' or context.scraper_type == 'url_discovery':
                 query = "SELECT container_state FROM scrapers.scrapers_configuration WHERE scraper_name = $1;"
             elif context.scraper_type == 'meta':  
                 query = "SELECT container_state FROM scrapers_meta.scrapers_configuration_meta WHERE scraper_name = $1;"
