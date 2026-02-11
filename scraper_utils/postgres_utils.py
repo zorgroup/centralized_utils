@@ -56,11 +56,17 @@ async def load_scraper_configuration(context: GlobalScraperContext):
         pool = context.postgres_client
         async with pool.acquire() as conn:
             async with conn.transaction():
-                if context.scraper_type == 'ps' or context.scraper_type == 'url_discovery':
-                    query = "SELECT * FROM scrapers.scrapers_configuration WHERE scraper_name = $1;"
-                elif context.scraper_type == 'meta':
-                    query = "SELECT * FROM scrapers_meta.scrapers_configuration_meta WHERE scraper_name = $1;" 
+                
+                # First look for scraper in schema "scrapers".
+                query = "SELECT * FROM scrapers.scrapers_configuration WHERE scraper_name = $1;"
                 row = await conn.fetchrow(query, context.scraper_name)
+                
+                # If not found, check in schema "scrapers_meta".
+                if not row:
+                    print('Scraper not found in postgres schema "scrapers".\n Checking in postgres schema "scrapers_meta"')
+                    query = "SELECT * FROM scrapers_meta.scrapers_configuration_meta WHERE scraper_name = $1;" 
+                    row = await conn.fetchrow(query, context.scraper_name)
+
                 psql_scraper_config = dict(row)
 
                 # Set container_state to 1.
@@ -108,11 +114,16 @@ async def check_if_restart_required(context: GlobalScraperContext) -> bool:
         # Read scraper configuration from postgres.
         pool = context.postgres_client
         async with pool.acquire() as conn:
-            if context.scraper_type == 'ps' or context.scraper_type == 'url_discovery':
-                query = "SELECT container_state FROM scrapers.scrapers_configuration WHERE scraper_name = $1;"
-            elif context.scraper_type == 'meta':  
-                query = "SELECT container_state FROM scrapers_meta.scrapers_configuration_meta WHERE scraper_name = $1;"
+            # First look for scraper in schema "scrapers".
+            query = "SELECT container_state FROM scrapers.scrapers_configuration WHERE scraper_name = $1;"
             row = await conn.fetchrow(query, context.scraper_name)
+            
+            # If not found, check in schema "scrapers_meta".
+            if not row:
+                print('Container state not found in postgres schema "scrapers".\n Checking in postgres schema "scrapers_meta"')
+                query = "SELECT container_state FROM scrapers_meta.scrapers_configuration_meta WHERE scraper_name = $1;"
+                row = await conn.fetchrow(query, context.scraper_name)
+            
             container_state = row[0]
             
             # Set exit code to 1. This is important, so scraper would restart with new configuration.
