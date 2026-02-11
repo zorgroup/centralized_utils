@@ -63,7 +63,7 @@ async def load_scraper_configuration(context: GlobalScraperContext):
                 
                 # If not found, check in schema "scrapers_meta".
                 if not row:
-                    print('Scraper not found in postgres schema "scrapers".\n Checking in postgres schema "scrapers_meta"')
+                    context.logger.log_info('Scraper config not found in postgres schema "scrapers". Checking in postgres schema "scrapers_meta"')
                     query = "SELECT * FROM scrapers_meta.scrapers_configuration_meta WHERE scraper_name = $1;" 
                     row = await conn.fetchrow(query, context.scraper_name)
 
@@ -100,6 +100,8 @@ async def load_scraper_configuration(context: GlobalScraperContext):
         elif context.running_environment == 'dev':                                            
             context.redis_host_dev = psql_scraper_config['redis_host']    
             context.redis_port_dev = psql_scraper_config['redis_port'] 
+
+        context.logger.log_info('Scraper config loaded from postgres.')
         
     except Exception as e:
         context.logger.log_processing_error(f"Error in loading scraper configuration - {str(e)}", proxy_id=None)
@@ -120,11 +122,13 @@ async def check_if_restart_required(context: GlobalScraperContext) -> bool:
             
             # If not found, check in schema "scrapers_meta".
             if not row:
-                print('Container state not found in postgres schema "scrapers".\n Checking in postgres schema "scrapers_meta"')
+                context.logger.log_info('Container state not found in postgres schema "scrapers". Checking in postgres schema "scrapers_meta"')
                 query = "SELECT container_state FROM scrapers_meta.scrapers_configuration_meta WHERE scraper_name = $1;"
                 row = await conn.fetchrow(query, context.scraper_name)
             
             container_state = row[0]
+
+            context.logger.log_info(f'Container State: {container_state}')
             
             # Set exit code to 1. This is important, so scraper would restart with new configuration.
             if container_state == 0:
